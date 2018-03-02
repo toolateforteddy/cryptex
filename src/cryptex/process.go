@@ -1,4 +1,4 @@
-package main
+package cryptex
 
 import (
 	"bufio"
@@ -6,7 +6,7 @@ import (
 	"os"
 	"strings"
 
-	"./cryptopasta"
+	"cryptex/cryptopasta"
 )
 
 func EncryptFile(src, dest string) error {

@@ -1,9 +1,9 @@
-package main
+package cryptex
 
 import (
 	"testing"
 
-	"./cryptopasta"
+	"cryptex/cryptopasta"
 )
 
 func TestEncryptDecryptPassword(t *testing.T) {
