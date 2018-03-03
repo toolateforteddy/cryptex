@@ -12,8 +12,6 @@ import (
 	kingpin "gopkg.in/alecthomas/kingpin.v2"
 )
 
-// var cryptKey = [32]byte("XVlBzgbaiCMRAjWwhTHctcuAxhxKQFDa")
-
 var key [32]byte
 
 const strKey = "AD_-7nN8yRCmppoYyqmpfOItyxRKVQbf"
