@@ -110,6 +110,4 @@ func main() {
 		err = pKey.EncryptFile(tmpFileName, *editFile)
 		kingpin.FatalIfError(err, "Error encrypting file")
 	}
-	// pKey.EncryptFile("secrets.toml", "tmp.toml")
-	// pKey.DecryptFile("tmp.toml", "decrypted.toml")
 }

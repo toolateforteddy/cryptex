@@ -16,3 +16,5 @@
 src/github.com/
 pkg/
 
+.cryptex/
+!.cryptex/secrets.toml

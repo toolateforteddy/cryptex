@@ -28,7 +28,7 @@ func FormatForShellExport(data interface{}) ([]string, error) {
 	for k, v := range flattened {
 		retArr = append(
 			retArr,
-			fmt.Sprintf("%s=%v", k, v))
+			fmt.Sprintf(`%s="%v"`, k, v))
 	}
 	return retArr, nil
 }
