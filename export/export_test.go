@@ -1,10 +1,10 @@
-package main
+package export
 
 import (
 	"reflect"
 	"testing"
 
-	"github.com/toolateforteddy/arbitrary/src/arbitrary"
+	"github.com/toolateforteddy/arbitrary"
 )
 
 func anonimize(data interface{}) interface{} {

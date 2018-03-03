@@ -1,4 +1,4 @@
-package main
+package process
 
 import (
 	"testing"
@@ -27,14 +27,14 @@ func TestEncryptDecryptPassword(t *testing.T) {
 }
 
 func TestEncryptDecryptLine(t *testing.T) {
-	password := "foobar = Iamapassword"
-
-	cb := encryptLine(password)
+	password := `foobar = "Iam a p assword"`
+	pKey := Key{cryptopasta.NewEncryptionKey()}
+	cb := pKey.encryptLine(password)
 
 	if string(cb) == password {
 		t.Fatalf("encrypt not obfuscate Got %q", string(cb))
 	}
-	db := decryptLine(cb)
+	db := pKey.decryptLine(cb)
 
 	if string(db) != password {
 		t.Fatalf("roundtrip was not clean. Got %q", string(db))
