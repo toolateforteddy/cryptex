@@ -1,9 +1,9 @@
-package cryptex
+package main
 
 import (
 	"testing"
 
-	"cryptex/cryptopasta"
+	"github.com/toolateforteddy/cryptex/cryptopasta"
 )
 
 func TestEncryptDecryptPassword(t *testing.T) {

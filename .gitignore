@@ -3,7 +3,6 @@
 *.dll
 *.so
 *.dylib
-pkg/
 
 # Test binary, build with `go test -c`
 *.test
@@ -15,5 +14,5 @@ pkg/
 .glide/
 
 src/github.com/
+pkg/
 
-.vscode/

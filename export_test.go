@@ -1,4 +1,4 @@
-package cryptex
+package main
 
 import (
 	"reflect"

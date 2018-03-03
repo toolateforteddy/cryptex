@@ -1,4 +1,4 @@
-package cryptex
+package main
 
 import (
 	"bufio"
@@ -6,7 +6,7 @@ import (
 	"os"
 	"strings"
 
-	"cryptex/cryptopasta"
+	"github.com/toolateforteddy/cryptex/cryptopasta"
 )
 
 func EncryptFile(src, dest string) error {

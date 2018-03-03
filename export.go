@@ -1,10 +1,10 @@
-package cryptex
+package main
 
 import (
 	"fmt"
 	"strings"
 
-	"github.com/toolateforteddy/arbitrary/src/arbitrary"
+	"github.com/toolateforteddy/arbitrary"
 	"github.com/toolateforteddy/errortrace"
 )
 
