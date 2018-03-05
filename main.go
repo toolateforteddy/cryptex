@@ -45,6 +45,8 @@ var (
 	export     = kingpin.Command("export", "export the decrypted data from the protected file.")
 	exportFile = export.Flag("file", "encrypted file name").Short('f').
 			Default(defaultSecretFileName).String()
+	exportSep = export.Flag("seperator", "string to join the env vars on").
+			Default("\n").String()
 
 	saveKey     = kingpin.Command("save", "save the key to disk")
 	saveKeyFile = saveKey.Flag("file", "file to save to").Short('f').
@@ -60,25 +62,10 @@ func main() {
 	case "save":
 		pKey := process.NewKey(&key)
 		err := pKey.SaveToDisk(keyFile)
-		if err != nil {
-			fmt.Println(err)
-		}
+		kingpin.FatalIfError(err, "Error saving key to disk")
 	case "export":
-		pKey := process.NewKey(&key)
-		tmp, err := ioutil.TempFile("", "secret")
-		kingpin.FatalIfError(err, "Error making tmp file")
-		tmpFileName := tmp.Name()
-		tmp.Close()
-		defer func() {
-			os.Remove(tmpFileName)
-		}()
-		err = pKey.DecryptFile(*exportFile, tmpFileName)
-		kingpin.FatalIfError(err, "Error decrypting file")
-		data, err := exp.LoadFile(tmpFileName)
-		kingpin.FatalIfError(err, "Error loading tmpfile")
-		vars, err := exp.FormatForShellExport(data)
-		kingpin.FatalIfError(err, "Error creating shell exports")
-		fmt.Printf("%v\n", strings.Join(vars, "\n"))
+		msg, err := exportFunc()
+		kingpin.FatalIfError(err, msg)
 	case "encrypt":
 		pKey := process.NewKey(&key)
 		err := pKey.EncryptFile(*encryptFile, *encryptOutput)
@@ -88,24 +75,65 @@ func main() {
 		err := pKey.DecryptFile(*decryptFile, defaultDecryptedFileName)
 		kingpin.FatalIfError(err, "Error decrypting file")
 	case "edit":
-		pKey := process.NewKey(&key)
-		tmp, err := ioutil.TempFile("", "secret")
-		kingpin.FatalIfError(err, "Error making tmp file")
-		tmpFileName := tmp.Name()
-		tmp.Close()
-		defer func() {
-			os.Remove(tmpFileName)
-		}()
-		err = pKey.DecryptFile(*editFile, tmpFileName)
-		kingpin.FatalIfError(err, "Error decrypting file")
-		fmt.Println(tmpFileName)
-		vim := exec.Command("vim", tmpFileName)
-		vim.Stdin = os.Stdin
-		vim.Stdout = os.Stdout
-		vim.Stderr = os.Stderr
-		err = vim.Run()
-		kingpin.FatalIfError(err, "Error editing file")
-		err = pKey.EncryptFile(tmpFileName, *editFile)
-		kingpin.FatalIfError(err, "Error encrypting file")
+		msg, err := editFunc()
+		kingpin.FatalIfError(err, msg)
 	}
+}
+
+func exportFunc() (string, error) {
+	pKey := process.NewKey(&key)
+	tmp, err := ioutil.TempFile("", "secret")
+	if err != nil {
+		return "Error making tmp file", err
+	}
+	tmpFileName := tmp.Name()
+	tmp.Close()
+	defer func() {
+		os.Remove(tmpFileName)
+	}()
+	err = pKey.DecryptFile(*exportFile, tmpFileName)
+	if err != nil {
+		return "Error decrypting file", err
+	}
+	data, err := exp.LoadFile(tmpFileName)
+	if err != nil {
+		return "Error loading tmpfile", err
+	}
+	vars, err := exp.FormatForShellExport(data)
+	if err != nil {
+		return "Error creating shell exports", err
+	}
+	fmt.Printf("%v", strings.Join(vars, *exportSep))
+	return "", nil
+}
+
+func editFunc() (string, error) {
+	pKey := process.NewKey(&key)
+	tmp, err := ioutil.TempFile("", "secret")
+	if err != nil {
+		return "Error making tmp file", err
+	}
+	tmpFileName := tmp.Name()
+	tmp.Close()
+	defer func() {
+		os.Remove(tmpFileName)
+	}()
+	err = pKey.DecryptFile(*editFile, tmpFileName)
+	if err != nil {
+		return "Error decrypting file", err
+	}
+
+	vim := exec.Command("vim", tmpFileName)
+	vim.Stdin = os.Stdin
+	vim.Stdout = os.Stdout
+	vim.Stderr = os.Stderr
+	err = vim.Run()
+	if err != nil {
+		return "Error editing file", err
+	}
+	err = pKey.EncryptFile(tmpFileName, *editFile)
+	if err != nil {
+		return "Error encrypting file", err
+	}
+	return "", nil
 }

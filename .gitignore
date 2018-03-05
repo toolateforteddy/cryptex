@@ -18,3 +18,6 @@ pkg/
 
 .cryptex/
 !.cryptex/secrets.toml
+
+# Don't commit the binary. Duh. :/
+cryptex
