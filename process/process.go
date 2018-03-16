@@ -13,15 +13,46 @@ import (
 )
 
 type Key struct {
-	k *[32]byte
+	k            *[32]byte
+	printableKey *string
 }
 
 func NewKey(k *[32]byte) Key {
-	return Key{k}
+	return Key{k: k}.initialize()
+}
+
+func NewKeyFromPrintable(str string) Key {
+	return Key{printableKey: &str}.initialize()
 }
 
 func (k *Key) key() *[32]byte {
 	return k.k
+}
+func (k *Key) Str() *string {
+	return k.printableKey
+}
+
+func (k Key) initialize() Key {
+	if k.k != nil {
+		b64Key := base64.StdEncoding.EncodeToString(k.k[:])
+		k.printableKey = &b64Key
+	} else if k.printableKey != nil {
+		k.k, _ = keyFromString(*k.printableKey)
+	}
+	return k
+}
+
+func keyFromString(str string) (*[32]byte, error) {
+	secret, err := base64.StdEncoding.DecodeString(str)
+	if err != nil {
+		return nil, errortrace.Wrap(err)
+	}
+	if len(secret) != 32 {
+		return nil, errortrace.Errorf("incorrect data format")
+	}
+	key := [32]byte{}
+	copy(key[:], secret)
+	return &key, nil
 }
 
 func (k *Key) SaveToDisk(file string) error {
@@ -29,30 +60,27 @@ func (k *Key) SaveToDisk(file string) error {
 		os.O_RDWR|os.O_CREATE|os.O_TRUNC,
 		os.ModeAppend|os.ModePerm)
 	defer dFile.Close()
-	_, err := dFile.Write(k.key()[:])
+	_, err := dFile.WriteString(*k.Str())
 	return errortrace.Wrap(err)
 }
 
 func NewFromDisk(file string) (Key, error) {
 	sFile, err := os.Open(file)
 	defer sFile.Close()
-
-	data := []byte{}
-	numBytes, err := sFile.Read(data)
+	brs := bufio.NewReader(sFile)
+	line, _, err := brs.ReadLine()
 	if err != nil {
 		return Key{}, errortrace.Wrap(err)
 	}
-	if numBytes == 0 {
+	if len(line) == 0 {
 		return Key{}, errortrace.Errorf("empty keyfile")
 	}
-	if numBytes < 32 {
-		return Key{}, errortrace.Errorf("insufficient bytes in file [%d]", numBytes)
+	b64Key := string(line)
+	k, err := keyFromString(b64Key)
+	if err != nil {
+		return Key{}, errortrace.Wrap(err)
 	}
-	key := [32]byte{}
-	for i := range key {
-		key[i] = data[i]
-	}
-	return Key{&key}, nil
+	return Key{k: k, printableKey: &b64Key}, nil
 }
 
 func (k Key) EncryptFile(src, dest string) error {
